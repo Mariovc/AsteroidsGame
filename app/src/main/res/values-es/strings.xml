@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VelascoM_U2</string>
+
+    <string name="Arrancar">Jugar</string>
+    <string name="Configurar">Configurar</string>
+    <string name="Acercade">Acerca de </string>
+    <string name="Salir">Puntuaciones</string>
+    <string name="tituloAplicacion">Asteroides</string>
+    <string name="action_settings">Configuración</string>
+</resources>
