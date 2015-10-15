@@ -22,4 +22,16 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+
+
+    <string-array name="tiposEntrada">
+        <item>Táctil</item>
+        <item>Teclado</item>
+        <item>Sensores</item>
+    </string-array>
+    <string-array name="tiposEntradaValores">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
 </resources>
