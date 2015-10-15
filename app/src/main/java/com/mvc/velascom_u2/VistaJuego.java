@@ -299,7 +299,10 @@ public class VistaJuego extends View implements SensorEventListener {
                         giroNave = Math.round((x - mX) / 2);
                         disparo = false;
                     } else if (dx < 6 && dy > 6) {
-                        aceleracionNave = Math.round(Math.abs(mY - y) / 20);
+                        aceleracionNave = Math.round((mY - y) / 20);
+                        if (aceleracionNave < 0) {
+                            aceleracionNave = 0;
+                        }
                         disparo = false;
                     }
                     break;
