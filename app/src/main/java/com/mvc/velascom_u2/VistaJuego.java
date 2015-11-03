@@ -42,6 +42,7 @@ public class VistaJuego extends View implements SensorEventListener {
     private float mX = 0, mY = 0;
     private boolean disparo = false;
     // //// MULTIMEDIA //////
+    private boolean musicaActivada;
     SoundPool soundPool;
     int idDisparo, idExplosion;
     // //// MISIL //////
@@ -49,6 +50,7 @@ public class VistaJuego extends View implements SensorEventListener {
     private static int PASO_VELOCIDAD_MISIL = 12;
     private boolean misilActivo = false;
     private int tiempoMisil;
+    private Drawable drawableMisil;
 
     // //// THREAD Y TIEMPO //////
 // Thread encargado de procesar el juego
@@ -76,7 +78,7 @@ public class VistaJuego extends View implements SensorEventListener {
 
     public VistaJuego(Context context, AttributeSet attrs) {
         super(context, attrs);
-        Drawable drawableNave, drawableAsteroide, drawableMisil;
+        Drawable drawableNave, drawableAsteroide;
         SharedPreferences pref = PreferenceManager.
                 getDefaultSharedPreferences(getContext());
         if (pref.getString("graficos", "1").equals("0")) {
@@ -133,7 +135,8 @@ public class VistaJuego extends View implements SensorEventListener {
         misil = new Grafico(this, drawableMisil);
 
         tipoEntrada = pref.getString("entrada", "0");
-        soundPool = new SoundPool( 5, AudioManager.STREAM_MUSIC , 0);
+        musicaActivada = pref.getBoolean("musica", false);
+        soundPool = new SoundPool(5, AudioManager.STREAM_MUSIC, 0);
         idDisparo = soundPool.load(context, R.raw.disparo, 0);
         idExplosion = soundPool.load(context, R.raw.explosion, 0);
     }
@@ -155,6 +158,7 @@ public class VistaJuego extends View implements SensorEventListener {
     public void desactivarSensores() {
         mSensorManager.unregisterListener(this);
     }
+
     @Override
     protected void onSizeChanged(int ancho, int alto, int ancho_anter, int alto_anter) {
         super.onSizeChanged(ancho, alto, ancho_anter, alto_anter);
@@ -180,7 +184,9 @@ public class VistaJuego extends View implements SensorEventListener {
             }
         }
         nave.dibujaGrafico(canvas);
-        misil.dibujaGrafico(canvas);
+        if (misil != null) {
+            misil.dibujaGrafico(canvas);
+        }
     }
 
     protected void actualizaFisica() {
@@ -220,6 +226,8 @@ public class VistaJuego extends View implements SensorEventListener {
                         break;
                     }
             }
+        } else {
+            misil = null;
         }
     }
 
@@ -227,11 +235,14 @@ public class VistaJuego extends View implements SensorEventListener {
         synchronized (asteroides) {
             asteroides.remove(i);
         }
-        soundPool.play(idExplosion, 1, 1, 0, 0, 1);
+        if (musicaActivada) {
+            soundPool.play(idExplosion, 1, 1, 0, 0, 1);
+        }
         misilActivo = false;
     }
 
     private void activaMisil() {
+        misil = new Grafico(this, drawableMisil);
         misil.setCenX(nave.getCenX());
         misil.setCenY(nave.getCenY());
         misil.setAngulo(nave.getAngulo());
@@ -244,7 +255,9 @@ public class VistaJuego extends View implements SensorEventListener {
         tiempoMisil = (int) Math.min(this.getWidth() / Math.abs(misil.
                 getIncX()), this.getHeight() / Math.abs(misil.getIncY())) - 2;
         misilActivo = true;
-        soundPool.play(idDisparo, 1, 1, 1, 0, 1);
+        if (musicaActivada) {
+            soundPool.play(idDisparo, 1, 1, 1, 0, 1);
+        }
     }
 
     @Override
@@ -302,38 +315,40 @@ public class VistaJuego extends View implements SensorEventListener {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
-        if (tipoEntrada.equals(ENTRADA_TACTIL)) {
-            float x = event.getX();
-            float y = event.getY();
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    disparo = true;
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    float dx = Math.abs(x - mX);
-                    float dy = Math.abs(y - mY);
-                    if (dy < 6 && dx > 6) {
+        float x = event.getX();
+        float y = event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                disparo = true;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float dx = Math.abs(x - mX);
+                float dy = Math.abs(y - mY);
+                if (dy < 6 && dx > 6) {
+                    if (tipoEntrada.equals(ENTRADA_TACTIL)) {
                         giroNave = Math.round((x - mX) / 2);
-                        disparo = false;
-                    } else if (dx < 6 && dy > 6) {
+                    }
+                    disparo = false;
+                } else if (dx < 6 && dy > 6) {
+                    if (tipoEntrada.equals(ENTRADA_TACTIL)) {
                         aceleracionNave = Math.round((mY - y) / 20);
                         if (aceleracionNave < 0) {
                             aceleracionNave = 0;
                         }
-                        disparo = false;
                     }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    giroNave = 0;
-                    aceleracionNave = 0;
-                    if (disparo) {
-                        activaMisil();
-                    }
-                    break;
-            }
-            mX = x;
-            mY = y;
+                    disparo = false;
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                giroNave = 0;
+                aceleracionNave = 0;
+                if (disparo) {
+                    activaMisil();
+                }
+                break;
         }
+        mX = x;
+        mY = y;
         return true;
     }
 
@@ -355,7 +370,7 @@ public class VistaJuego extends View implements SensorEventListener {
                 hayValorInicial = true;
             }
             giroNave = (int) (valorY - valorInicialY) / 3;
-            aceleracionNave = (int) (valorX - valorInicialX) / 12;
+            aceleracionNave = (int) (valorX - valorInicialX) / 6;
         }
     }
 
@@ -392,6 +407,7 @@ public class VistaJuego extends View implements SensorEventListener {
             }
         }
     }
+
     public ThreadJuego getThread() {
         return thread;
     }

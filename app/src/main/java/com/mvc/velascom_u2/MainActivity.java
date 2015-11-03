@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,14 +15,15 @@ public class MainActivity extends AppCompatActivity {
 
     public static AlmacenPuntuaciones almacen = new AlmacenPuntuacionesArray();
     private MediaPlayer mp;
+    private SharedPreferences pref;
+    private boolean musicaActivada;
 //    private FragmentTabHost tabHost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mp = MediaPlayer.create(this, R.raw.audio);
-        mp.start();
+        pref = PreferenceManager.getDefaultSharedPreferences(this);
         //        tabHost = (FragmentTabHost) findViewById(R.id.mi_tabhost);
 //        tabHost.setup(this, getSupportFragmentManager(), android.R.id.tabcontent);
 //        tabHost.addTab(tabHost.newTabSpec("tab1").setIndicator("Lengüeta 1"),
@@ -34,19 +34,36 @@ public class MainActivity extends AppCompatActivity {
 //                Tab1.class, null);
     }
 
+    private void initMusic() {
+        musicaActivada = pref.getBoolean("musica", false);
+        if (musicaActivada) {
+            if (mp == null) {
+                mp = MediaPlayer.create(this, R.raw.audio);
+            }
+        } else {
+            mp = null;
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
-        mp.pause();
+        if (mp != null) {
+            mp.pause();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mp.start();
+        initMusic();
+        if (mp != null) {
+            mp.start();
+        }
     }
 
-    @Override protected void onSaveInstanceState(Bundle estadoGuardado){
+    @Override
+    protected void onSaveInstanceState(Bundle estadoGuardado) {
         super.onSaveInstanceState(estadoGuardado);
         if (mp != null) {
             int pos = mp.getCurrentPosition();
@@ -54,7 +71,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override protected void onRestoreInstanceState(Bundle estadoGuardado){
+    @Override
+    protected void onRestoreInstanceState(Bundle estadoGuardado) {
         super.onRestoreInstanceState(estadoGuardado);
         if (estadoGuardado != null && mp != null) {
             int pos = estadoGuardado.getInt("posicion");
@@ -100,12 +118,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            lanzarPreferencias(null);
             return true;
         } else if (id == R.id.acercaDe) {
             lanzarAcercaDe(null);
-            return true;
-        } else if (id == R.id.action_settings) {
-            lanzarPreferencias(null);
             return true;
         }
         return super.onOptionsItemSelected(item);
