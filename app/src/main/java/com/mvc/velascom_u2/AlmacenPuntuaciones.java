@@ -9,5 +9,9 @@ import java.util.Vector;
  */
 public interface AlmacenPuntuaciones {
     public void guardarPuntuacion(int puntos,String nombre,long fecha);
-    public Vector<String> listaPuntuaciones(int cantidad);
+    public void listaPuntuaciones(int cantidad, AlmacenListener listener);
+
+    interface AlmacenListener {
+        void onDataObtained(Vector<String> puntuaciones);
+    }
 }

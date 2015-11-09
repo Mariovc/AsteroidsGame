@@ -42,7 +42,7 @@ public class AlmacenPuntuacionesRecursoAssets implements AlmacenPuntuaciones {
 
 
     @Override
-    public Vector<String> listaPuntuaciones(int cantidad) {
+    public void listaPuntuaciones(int cantidad, AlmacenListener listener) {
         List<String> list;
         puntuaciones = getAlmacenGuardado();
         if (cantidad > puntuaciones.size()) {
@@ -50,7 +50,7 @@ public class AlmacenPuntuacionesRecursoAssets implements AlmacenPuntuaciones {
         } else {
             list = puntuaciones.subList(0, cantidad);
         }
-        return new Vector<>(list);
+        listener.onDataObtained(new Vector<>(list));
     }
 
     public Vector<String> getAlmacenGuardado() {

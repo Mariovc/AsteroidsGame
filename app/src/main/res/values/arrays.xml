@@ -41,6 +41,8 @@
         <item>Memoria externa</item>
         <item>Raw</item>
         <item>Assets</item>
+        <item>Sockets</item>
+        <item>Servicio web</item>
     </string-array>
     <string-array name="tiposAlmacenValores">
         <item>0</item>
@@ -48,6 +50,8 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+        <item>5</item>
+        <item>6</item>
     </string-array>
 
 </resources>

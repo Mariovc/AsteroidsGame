@@ -23,10 +23,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int EXTERNAL_MEMORY_TYPE = 2;
     private static final int RAW_TYPE = 3;
     private static final int ASSETS_TYPE = 4;
+    private static final int SOCKET_TYPE = 5;
+    private static final int WEB_SERVICE_TYPE = 6;
     public static AlmacenPuntuaciones almacen;
     private MediaPlayer mp;
     private SharedPreferences pref;
     private boolean musicaActivada;
+    private int puntuacion = -1;
+    private AlertDialog alertDialog;
 //    private FragmentTabHost tabHost;
 
     @Override
@@ -64,6 +68,12 @@ public class MainActivity extends AppCompatActivity {
             case ASSETS_TYPE:
                 almacen = new AlmacenPuntuacionesRecursoAssets(this);
                 break;
+            case SOCKET_TYPE:
+                almacen = new AlmacenPuntuacionesSocket();
+                break;
+            case WEB_SERVICE_TYPE:
+                almacen = new AlmacenPuntuacionesSW_PHP();
+                break;
         }
         return almacen;
     }
@@ -85,6 +95,9 @@ public class MainActivity extends AppCompatActivity {
         if (mp != null) {
             mp.pause();
         }
+        if (alertDialog != null) {
+            alertDialog.dismiss();
+        }
     }
 
     @Override
@@ -95,13 +108,16 @@ public class MainActivity extends AppCompatActivity {
         if (mp != null) {
             mp.start();
         }
+        if (puntuacion >= 0) {
+            lanzarDialog(puntuacion);
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1234 && resultCode == RESULT_OK && data != null) {
-            int puntuacion = data.getExtras().getInt("puntuacion");
+            puntuacion = data.getExtras().getInt("puntuacion");
             lanzarDialog(puntuacion);
         }
     }
@@ -120,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                MainActivity.this.puntuacion = -1;
                 String nombre = input.getText().toString();
                 almacen.guardarPuntuacion(puntuacion, nombre, System.currentTimeMillis());
                 lanzarPuntuaciones(null);
@@ -133,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
 //        });
 
         builder.setCancelable(false);
-        builder.show();
+        alertDialog = builder.show();
     }
 
     @Override
@@ -143,14 +160,20 @@ public class MainActivity extends AppCompatActivity {
             int pos = mp.getCurrentPosition();
             estadoGuardado.putInt("posicion", pos);
         }
+        if (alertDialog != null) {
+            estadoGuardado.putInt("puntuacion", puntuacion);
+        }
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle estadoGuardado) {
         super.onRestoreInstanceState(estadoGuardado);
-        if (estadoGuardado != null && mp != null) {
-            int pos = estadoGuardado.getInt("posicion");
-            mp.seekTo(pos);
+        if (estadoGuardado != null) {
+            if (mp != null) {
+                int pos = estadoGuardado.getInt("posicion");
+                mp.seekTo(pos);
+            }
+            puntuacion = estadoGuardado.getInt("puntuacion", -1);
         }
     }
 

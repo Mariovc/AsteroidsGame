@@ -254,7 +254,6 @@ public class VistaJuego extends View implements SensorEventListener {
     }
 
     private void activaMisil() {
-        salir();
         misil = new Grafico(this, drawableMisil);
         misil.setCenX(nave.getCenX());
         misil.setCenY(nave.getCenY());
