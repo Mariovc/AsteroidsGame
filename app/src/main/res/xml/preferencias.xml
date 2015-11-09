@@ -27,6 +27,13 @@
             android:key="fragmentos"
             android:summary="En cuantos trozos se divide un asteroide"
             android:title="Número de Fragmentos" />
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/tiposAlmacen"
+            android:entryValues="@array/tiposAlmacenValores"
+            android:key="tipoAlmacen"
+            android:summary="Tipo de almacenamiento de puntaciones"
+            android:title="Tipo de almacenamiento" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="preferencias_multijugador"

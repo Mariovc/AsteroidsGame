@@ -1,6 +1,8 @@
 package com.mvc.velascom_u2;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -16,6 +18,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
@@ -37,7 +40,7 @@ public class VistaJuego extends View implements SensorEventListener {
     private static final String ENTRADA_TECLADO = "1";
     private static final String ENTRADA_SENSORES = "2";
 
-
+    private int puntuacion = 0;
     private String tipoEntrada;
     private float mX = 0, mY = 0;
     private boolean disparo = false;
@@ -75,6 +78,11 @@ public class VistaJuego extends View implements SensorEventListener {
     private static final float PASO_ACELERACION_NAVE = 0.5f;
 
     private SensorManager mSensorManager;
+    private Activity padre;
+
+    public void setPadre(Activity padre) {
+        this.padre = padre;
+    }
 
     public VistaJuego(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -239,9 +247,14 @@ public class VistaJuego extends View implements SensorEventListener {
             soundPool.play(idExplosion, 1, 1, 0, 0, 1);
         }
         misilActivo = false;
+        puntuacion += 1000;
+        if (asteroides.isEmpty()) {
+            salir();
+        }
     }
 
     private void activaMisil() {
+        salir();
         misil = new Grafico(this, drawableMisil);
         misil.setCenX(nave.getCenX());
         misil.setCenY(nave.getCenY());
@@ -406,6 +419,16 @@ public class VistaJuego extends View implements SensorEventListener {
                 }
             }
         }
+    }
+
+
+    private void salir() {
+        Bundle bundle = new Bundle();
+        bundle.putInt("puntuacion", puntuacion);
+        Intent intent = new Intent();
+        intent.putExtras(bundle);
+        padre.setResult(Activity.RESULT_OK, intent);
+        padre.finish();
     }
 
     public ThreadJuego getThread() {
